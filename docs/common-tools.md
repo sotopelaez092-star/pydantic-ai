@@ -138,3 +138,69 @@ Here are some of the top recent news articles related to GenAI:
 Feel free to click on the links to dive deeper into each story!
 """
 ```
+
+## Serper Search Tool
+
+!!! info
+    Serper is a paid Google Search API service, but they offer 2,500 free searches to get started.
+
+    You need to [sign up for an account](https://serper.dev) and get an API key to use the Serper search tool.
+
+The Serper search tool allows you to search Google for information. It is built on top of the [Serper API](https://serper.dev/).
+
+### Installation
+
+The Serper search tool uses `httpx` which is already a core dependency of Pydantic AI, so no additional installation is required.
+
+### Usage
+
+Here's an example of how you can use the Serper search tool with an agent:
+
+```py {title="serper_search.py" test="skip"}
+import os
+
+from pydantic_ai import Agent
+from pydantic_ai.common_tools.serper import serper_search_tool
+
+api_key = os.getenv('SERPER_API_KEY')
+assert api_key is not None
+
+agent = Agent(
+    'openai:gpt-4o',
+    tools=[serper_search_tool(api_key)],
+    system_prompt='Search Google for the given query and return the results.',
+)
+
+result = agent.run_sync('What are the latest developments in AI?')
+print(result.output)
+```
+
+### Advanced Usage
+
+The Serper search tool supports different search types including web search, news search, and image search:
+
+```py {title="serper_advanced.py" test="skip"}
+import os
+
+from pydantic_ai import Agent
+from pydantic_ai.common_tools.serper import SerperSearchTool
+from pydantic_ai.tools import Tool
+
+api_key = os.getenv('SERPER_API_KEY')
+assert api_key is not None
+
+# Create a news-specific search tool
+news_tool = Tool(
+    SerperSearchTool(api_key=api_key).__call__,
+    name='google_news_search',
+    description='Search Google News for the latest news articles.',
+)
+
+agent = Agent(
+    'openai:gpt-4o',
+    tools=[news_tool],
+)
+
+result = agent.run_sync('What are the top tech news today?')
+print(result.output)
+```
